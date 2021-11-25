@@ -1,0 +1,45 @@
+version: '3'
+services:
+  db:
+    image: mysql
+    environment:
+      MYSQL_RANDOM_ROOT_PASSWORD: true
+    expose:
+      - "3306"
+    volumes:
+      - ./mysql:/docker-entrypoint-initdb.d/:ro
+  credit-app:
+    image: example.com/microservice-docker-credit-app:0.0.1-SNAPSHOT
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/CreditDB
+      DATABASE_USERNAME: credit-app-user
+      DATABASE_PASSWORD: credit-password
+    ports:
+      - "8081:8081"
+    depends_on:
+      - db
+      - customer-app
+      - product-app
+    restart: on-failure
+  customer-app:
+    image: example.com/microservice-docker-customer-app:0.0.1-SNAPSHOT
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/CustomerDB
+      DATABASE_USERNAME: customer-app-user
+      DATABASE_PASSWORD: customer-password
+    expose:
+      - "8083"
+    depends_on:
+      - db
+    restart: on-failure
+  product-app:
+    image: example.com/microservice-docker-product-app:0.0.1-SNAPSHOT
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/ProductDB
+      DATABASE_USERNAME: product-app-user
+      DATABASE_PASSWORD: product-password
+    expose:
+      - "8082"
+    depends_on:
+      - db
+    restart: on-failure
